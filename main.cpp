@@ -9,17 +9,17 @@
 #include <map>
 #include <windows.h>
 
-//#include "src/hooks/stats/base_damage.h"
-//#include "src/hooks/stats/base_spell.h"
-//#include "src/hooks/stats/base_hp.h"
-//#include "src/hooks/stats/base_armor.h"
-//#include "src/hooks/stats/base_crit.h"
-//#include "src/hooks/stats/base_haste.h"
-//#include "src/hooks/stats/base_regen.h"
-//#include "src/hooks/stats/base_resist.h"
+const static float STAT_MODIFIERS[7] = {
+	1, // Damage
+	10, // Health
+	1, // Armor
+	1, // Resistance
+	0.0075f, // Crit
+	0.0075f, // Haste
+	0.025f, // Regen
+};
 
 #include "src/hooks/display/change_stat_display.h"
-#include "src/hooks/display/change_stat_suffix.h"
 
 #include "src/memory/memory_helper.h"
 
@@ -32,7 +32,6 @@ void Popup(const char* title, const char* msg) {
 }
 
 class Mod : GenericMod {
-	bool init = false;
 
 	void ChangeArtifactDisplay(){
 		//Item display
@@ -56,13 +55,13 @@ class Mod : GenericMod {
 
 	virtual void OnCreatureAttackPowerCalculated(cube::Creature* creature, float* power) {
 		if (cube::GetGame()->world->local_creature == creature) {
-			*power = *power + (float)creature->diving_skill;
+			*power = *power + STAT_MODIFIERS[0] * (float)creature->diving_skill;
 		}
 	}
 
 	virtual void OnCreatureSpellPowerCalculated(cube::Creature* creature, float* power) {
 		if (cube::GetGame()->world->local_creature == creature) {
-			*power = *power + (float)creature->diving_skill;
+			*power = *power + STAT_MODIFIERS[0] * (float)creature->diving_skill;
 		}
 	}
 
@@ -72,83 +71,46 @@ class Mod : GenericMod {
 		cube::World* world = game->world;
 		if (!world) return;
 		if (cube::GetGame()->world->local_creature == creature) {
-			*hp = *hp + (10.0f * (float)creature->climbing_speed);
+			*hp = *hp + (STAT_MODIFIERS[1] * (float)creature->climbing_speed);
 		}
 	}
 
 	virtual void OnCreatureArmorCalculated(cube::Creature* creature, float* armor) {
 		if (cube::GetGame()->world->local_creature == creature) {
-			*armor = *armor + (float)creature->swimming_speed;
+			*armor = *armor + STAT_MODIFIERS[2] * (float)creature->swimming_speed;
 		}
 	}
 
 	virtual void OnCreatureCriticalCalculated(cube::Creature* creature, float* critical) {
 		if (cube::GetGame()->world->local_creature == creature) {
-			*critical = *critical + (0.00075f * (float)creature->sailing_speed);
+			*critical = *critical + (STAT_MODIFIERS[4] * (float)creature->sailing_speed);
 		}
 	}
 
 	virtual void OnCreatureHasteCalculated(cube::Creature* creature, float* power) {
 		if (cube::GetGame()->world->local_creature == creature) {
-			*power = *power + (0.00075f * (float)creature->riding_speed);
+			*power = *power + (STAT_MODIFIERS[5] * (float)creature->riding_speed);
 		}
 	}
 
 	virtual void OnCreatureRegenerationCalculated(cube::Creature* creature, float* regeneration) {
 		if (cube::GetGame()->world->local_creature == creature) {
-			*regeneration = *regeneration + (0.00025f * (float)creature->hang_gliding_speed);
+			*regeneration = *regeneration + (STAT_MODIFIERS[6] * (float)creature->hang_gliding_speed);
 		}
 	}
 
 	virtual void OnCreatureResistanceCalculated(cube::Creature* creature, float* resistance) {
 		if (cube::GetGame()->world->local_creature == creature) {
-			*resistance = *resistance + (float)creature->lamp_diameter;
+			*resistance = *resistance + STAT_MODIFIERS[3] * (float)creature->lamp_diameter;
 		}
 	}
 
 	virtual void Initialize() override {
 		ChangeArtifactDisplay();
-		suffix_change();
-		change_stats();
-
-		//set_base_damage();
-		//set_base_spell();
-		//set_base_hp();
-		//set_base_armor();
-		//set_base_crit();
-		//set_base_haste();
-		//set_base_regen();
-		//set_base_resist();
+		hook::change_stats();
 	}
-
-	virtual void OnGameTick(cube::Game* game) override {
-		if (!init) {
-			init = true;
-
-		}
-	}
-
 };
 
 EXPORT Mod* MakeMod() {
 	return new Mod();
 }
-
-/*
-To do:
-
-1. Function to get all the artifacts in the inventory for each boost
-2. Change name of each boost
-3. Modify each base stat based off number of artifacts of that type in inventory
-4. 
-
-Code caves used:
-50301
-1694B0
-1694C2
-50CB1
-5F01F
-
-Next hook: 5B6460, 5B646E, 5B647C, 5B648A, 5B6498, 5B64A6, 5B64B4
-
-*/
