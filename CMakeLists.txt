@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.8)
 project(project_LichModsCubegression)
 add_subdirectory(cwmods)
-add_library (LichModsCubegression SHARED "main.cpp")
-target_link_libraries (LichModsCubegression LINK_PUBLIC CWSDK)
+add_library (Cubegression-v2.2.0 SHARED "main.cpp")
+target_link_libraries (Cubegression-v2.2.0 LINK_PUBLIC CWSDK)
